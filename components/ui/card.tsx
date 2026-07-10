@@ -1,2 +1,2 @@
 import { cn } from "@/lib/utils"; import type { HTMLAttributes } from "react";
-export function Card({className,...props}:HTMLAttributes<HTMLDivElement>){return <div className={cn("rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950",className)} {...props}/>}
+export function Card({className,...props}:HTMLAttributes<HTMLDivElement>){return <div className={cn("rounded-xl border border-slate-200/80 bg-white/88 shadow-[0_18px_45px_rgba(31,41,55,0.08)] backdrop-blur dark:border-slate-700/70 dark:bg-slate-950/82 dark:shadow-[0_18px_50px_rgba(0,0,0,0.28)]",className)} {...props}/>}

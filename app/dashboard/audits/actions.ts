@@ -92,6 +92,9 @@ export async function reviewAudit(auditId: string, decision: "approved" | "chang
   const {supabase,company,user}=await getActiveCompany();
   if (!company) throw new Error("No active company");
   const companyId=String(company.id);
+  const {data:audit,error:auditError}=await supabase.from("audits").select("id").eq("id",auditId).eq("company_id",companyId).maybeSingle();
+  if(auditError) throw auditError;
+  if(!audit) throw new Error("Audit not found");
   const {error}=await supabase.from("audit_reviews").insert({company_id:companyId,audit_id:auditId,reviewer_id:user.id,decision,note:note ?? null});
   if(error) throw error;
   revalidatePath("/dashboard/audits");

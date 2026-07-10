@@ -186,20 +186,53 @@ export async function resolveDuplicate(candidateId: string, resolution: "merge" 
 export async function approveCleaningJob(jobId: string) {
   const { company, supabase, user } = await getActiveCompany();
   if (!company) throw new Error("Company required");
-  const [{ data: openIssues }, { data: unresolvedDuplicates }, { data: rows }] = await Promise.all([
+  const companyId = String(company.id);
+  const [{ data: openIssues }, { data: unresolvedDuplicates }, { data: rows }, { data: duplicateCandidates }, { data: products }] = await Promise.all([
     supabase.from("cleaning_issues").select("id", { count: "exact", head: false }).eq("company_id", company.id).eq("cleaning_job_id", jobId).eq("status", "open").limit(1),
     supabase.from("cleaning_duplicate_candidates").select("id", { count: "exact", head: false }).eq("company_id", company.id).eq("cleaning_job_id", jobId).is("resolution", null).limit(1),
-    supabase.from("cleaning_staged_rows").select("id,cleaned_data,is_valid,is_duplicate").eq("company_id", company.id).eq("cleaning_job_id", jobId).eq("is_valid", true).limit(25000),
+    supabase.from("cleaning_staged_rows").select("id,row_number,cleaned_data,is_valid,is_duplicate").eq("company_id", company.id).eq("cleaning_job_id", jobId).eq("is_valid", true).limit(25000),
+    supabase.from("cleaning_duplicate_candidates").select("staged_row_id,resolution").eq("company_id", company.id).eq("cleaning_job_id", jobId),
+    supabase.from("products").select("sku").eq("company_id", company.id).limit(25000),
   ]);
   if (openIssues?.length) throw new Error("Resolve all open validation issues before approval");
   if (unresolvedDuplicates?.length) throw new Error("Resolve all duplicate candidates before approval");
-  const approvedRows = (rows ?? []).map((row) => ({
-    ...(row.cleaned_data as Record<string, unknown>),
-    company_id: company.id,
-    created_by: user.id,
-    raw_data: {},
-    normalized_data: row.cleaned_data,
-  }));
+  const resolutions = new Map((duplicateCandidates ?? []).map((candidate) => [candidate.staged_row_id, candidate.resolution]));
+  const reservedSkus = new Set((products ?? []).map((product) => String(product.sku ?? "").trim().toLowerCase()).filter(Boolean));
+  const uniqueSku = (baseSku: string, rowNumber: number) => {
+    const base = baseSku.trim();
+    let candidate = `${base}-COPY-${rowNumber}`;
+    let suffix = 2;
+    while (reservedSkus.has(candidate.toLowerCase())) {
+      candidate = `${base}-COPY-${rowNumber}-${suffix}`;
+      suffix += 1;
+    }
+    reservedSkus.add(candidate.toLowerCase());
+    return candidate;
+  };
+  const approvedRows: Record<string, unknown>[] = [];
+  for (const row of rows ?? []) {
+    const cleaned = { ...(row.cleaned_data as Record<string, unknown>) };
+    if (row.is_duplicate) {
+      const resolution = resolutions.get(row.id);
+      if (!resolution) throw new Error(`Duplicate row ${row.row_number} is missing a resolution`);
+      if (resolution === "ignore") continue;
+      if (resolution === "keep_both") {
+        const sku = String(cleaned.sku ?? "").trim();
+        if (!sku) throw new Error(`Duplicate row ${row.row_number} needs a SKU before it can be kept`);
+        cleaned.sku = uniqueSku(sku, Number(row.row_number ?? approvedRows.length + 1));
+      }
+    } else {
+      const sku = String(cleaned.sku ?? "").trim();
+      if (sku) reservedSkus.add(sku.toLowerCase());
+    }
+    approvedRows.push({
+      ...cleaned,
+      company_id: companyId,
+      created_by: user.id,
+      raw_data: {},
+      normalized_data: cleaned,
+    });
+  }
   if (!approvedRows.length) throw new Error("No valid rows are ready for approval");
   for (let index = 0; index < approvedRows.length; index += 500) {
     const { error } = await supabase.from("products").upsert(approvedRows.slice(index, index + 500), { onConflict: "company_id,sku" });

@@ -42,7 +42,7 @@ export function ProductWorkspace({ initialProducts, companyId, savedViews }: { i
       if (payload.eventType === "DELETE") setProducts((items) => items.filter((p) => p.id !== payload.old.id));
     }).subscribe();
     return () => { void supabase.removeChannel(channel); };
-  });
+  }, [companyId]);
 
   const categories = useMemo(() => Array.from(new Set(products.map((p) => p.category).filter(Boolean) as string[])).sort(), [products]);
   const filtered = useMemo(() => products.filter((p) => {

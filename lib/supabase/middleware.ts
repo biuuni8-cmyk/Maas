@@ -34,6 +34,10 @@ export async function updateSession(request: NextRequest) {
   if (protectedRoute && !user) {
     const next = request.nextUrl.clone();
     next.pathname = "/login";
+    next.searchParams.set(
+      "next",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
     return NextResponse.redirect(next);
   }
 

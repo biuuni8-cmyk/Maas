@@ -18,8 +18,8 @@ export async function GET(req:NextRequest){
  if(!(keyRow.scopes??[]).includes("read")) return NextResponse.json({error:"Insufficient scope"},{status:403});
  const limit=Math.min(Number(req.nextUrl.searchParams.get("limit")||50),250);
  const {data, error:productsError}=await db.from("products").select("id,sku,name,category,price,currency,status,updated_at").eq("company_id",keyRow.company_id).order("updated_at",{ascending:false}).limit(limit);
+ if(productsError) return NextResponse.json({error:productsError.message},{status:500});
  await db.rpc("increment_api_usage",{p_company_id:keyRow.company_id});
  await db.from("api_keys").update({last_used_at:new Date().toISOString()}).eq("id",keyRow.id);
- if(productsError) return NextResponse.json({error:productsError.message},{status:500});
  return NextResponse.json({data,meta:{limit,count:data?.length??0}});
 }

@@ -1,6 +1,77 @@
 @import "tailwindcss";
-:root { color-scheme: light; }
-.dark { color-scheme: dark; }
-body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #f7f8fa; color: #111827; }
-.dark body { background: #0b1020; color: #f3f4f6; }
+:root {
+  color-scheme: light;
+  --maas-ink: #172033;
+  --maas-muted: #64748b;
+  --maas-paper: #fffdf7;
+  --maas-panel: rgba(255, 255, 255, 0.86);
+  --maas-line: rgba(29, 78, 216, 0.13);
+  --maas-teal: #0f9f95;
+  --maas-coral: #f9735b;
+  --maas-indigo: #4757d6;
+  --maas-amber: #f5b84b;
+}
+
+.dark {
+  color-scheme: dark;
+  --maas-ink: #edf4ff;
+  --maas-muted: #a7b3c8;
+  --maas-paper: #101523;
+  --maas-panel: rgba(15, 23, 42, 0.82);
+  --maas-line: rgba(125, 211, 252, 0.13);
+}
+
 * { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: var(--maas-ink);
+  background:
+    linear-gradient(135deg, rgba(71, 87, 214, 0.08), transparent 31%),
+    linear-gradient(225deg, rgba(15, 159, 149, 0.1), transparent 28%),
+    linear-gradient(180deg, #fffdf7 0%, #f6f9fb 45%, #eef7f4 100%);
+}
+
+.dark body {
+  background:
+    linear-gradient(135deg, rgba(71, 87, 214, 0.18), transparent 30%),
+    linear-gradient(225deg, rgba(15, 159, 149, 0.13), transparent 34%),
+    linear-gradient(180deg, #0d1220 0%, #111827 58%, #0b1520 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--maas-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--maas-line) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 82%);
+}
+
+::selection {
+  background: rgba(249, 115, 91, 0.24);
+}
+
+.maas-illustration {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.92), rgba(255, 250, 240, 0.72)),
+    linear-gradient(135deg, rgba(15, 159, 149, 0.22), rgba(71, 87, 214, 0.16));
+  box-shadow: 0 24px 70px rgba(32, 44, 78, 0.18);
+}
+
+.dark .maas-illustration {
+  border-color: rgba(148, 163, 184, 0.22);
+  background:
+    linear-gradient(140deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.78)),
+    linear-gradient(135deg, rgba(15, 159, 149, 0.2), rgba(71, 87, 214, 0.18));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+}
