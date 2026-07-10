@@ -1,0 +1,1 @@
+import Link from "next/link"; export function Logo(){return <Link href="/dashboard" className="flex items-center gap-3 font-bold"><span className="grid size-9 place-items-center rounded-xl bg-indigo-600 text-white">M</span><span className="text-xl">Maas</span></Link>}
