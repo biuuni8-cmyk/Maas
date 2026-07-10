@@ -72,3 +72,4 @@ Maas now includes a real cleaning workflow under `/dashboard/cleaning`: CSV stag
 
 The audit center now supports daily through yearly periods, data-quality scoring, issue lifecycle management, period comparisons, review decisions and realtime schedule configuration. Apply `supabase/migrations/0004_audit_center.sql` after earlier migrations.
 # Maas
+# Maas
