@@ -8,11 +8,19 @@ function usableValue(value: string | undefined) {
     : undefined;
 }
 
+function usableSupabaseKey(value: string | undefined) {
+  const key = usableValue(value);
+  if (!key) return undefined;
+  if (key.startsWith("sb_publishable_")) return key;
+  if (key.startsWith("eyJ") && key.split(".").length === 3) return key;
+  return undefined;
+}
+
 export function getSupabasePublicConfig() {
   const url = usableValue(process.env.NEXT_PUBLIC_SUPABASE_URL) || fallbackSupabaseUrl;
   const key =
-    usableValue(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
-    usableValue(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
+    usableSupabaseKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    usableSupabaseKey(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
     fallbackSupabaseKey;
 
   if (!url || !key) {
